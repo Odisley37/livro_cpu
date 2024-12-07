@@ -1,0 +1,7 @@
+<h2>Confirmar Exclusão</h2>
+<p>Tem certeza de que deseja excluir o serviço interno <strong>{{ servicointerno.operador }}</strong>?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Excluir</button>
+    <a href="{% url 'servicointerno_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>

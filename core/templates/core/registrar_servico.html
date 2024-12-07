@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Livro do CPU - Serviço de dia
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="display-4">Editar Serviço</h3>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="POST" class="form">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit"  class="btn btn-primary">Registrar</button>
+        </form>
+      </div>
+    </div>
+    <div>
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Operador</th>
+                    <th>Início do Serviço</th>
+                    <th>Fim do Serviço</th>
+                    <th>Alterações</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for servicointerno in servicointernos %}
+                <tr>
+                    <td>
+                        <a href="{% url 'servicointerno_detail' servicointerno.id %}" class="text-primary fw-semibold">
+                            {{ servicointerno.operador }}
+                        </a>
+                    </td>
+                    <td>{{ servicointerno.horario_inicio }}</td>
+                    <td>{{ servicointerno.horario_fim }}</td>
+                    <td>{{ servicointerno.alteracao }}</td>
+                    <td>
+                        <!-- Botão de visualização -->
+                        <a href="{% url 'servicointerno_detail' servicointerno.id %}" class="btn btn-info btn-sm">
+                            <i class="bi bi-eye"></i> Visualizar
+                        </a>
+    
+                        <!-- Botão de edição (verifica permissão) -->
+                        {% if perms.core.change_servicointerno %}
+                        <a href="{% url 'servicointerno_update' servicointerno.id %}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        {% endif %}
+    
+                        <!-- Botão de exclusão (verifica permissão) -->
+                        {% if perms.core.delete_servicointerno %}
+                        <a href="{% url 'servicointerno_delete' servicointerno.id %}" class="btn btn-danger btn-sm btn-delete">
+                            <i class="bi bi-trash"></i> Excluir
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <a href="#" class="btn btn-secondary mt-3">Cancelar e Voltar para a Lista de Categorias</a>
+    <a href="{% url 'gerar_relatorio_pdf' %}" class="btn btn-primary mt-3">Imprimir</a>
+  </div>
+
+  {% endblock %}
+  

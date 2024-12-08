@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Livro do CPU - Deletar Livro
+{% endblock %}
+
+{% block content %}
+<div>
+
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-body">
+
+            <h2>Detalhes do Serviço</h2>
+            <p><strong>Operador:</strong> {{ servicointerno.operador }}</p>
+            <p><strong>Início do Serviço:</strong> {{ servicointerno.horario_inicio }}</p>
+            <p><strong>Fim do Serviço:</strong> {{ servicointerno.horario_fim }}</p>
+            <p><strong>Alterações:</strong> {{ servicointerno.alteracao }}</p>
+            </div>
+        </div>    
+        
+    </div>  
+    <div>    
+        <a href="{% url 'servico_list' %}" class="btn btn-primary mt-3">Voltar</a>
+        
+        <a href="{% url 'gerar_relatorio_pdf' servicointerno.id %}" class="btn btn-success btn-printer mt-3">Imprimir </a>
+    </div>
+
+{% endblock %}

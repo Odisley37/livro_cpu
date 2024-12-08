@@ -14,7 +14,7 @@ class Veiculo(models.Model):
     update_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        ordering = ['tipo']
+        ordering = ['prefixo']
         
     def __str__(self):
-        return self.tipo
+        return self.prefixo

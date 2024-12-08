@@ -5,6 +5,11 @@ from rest_framework import viewsets
 from .models import ServicoInterno
 from .forms import ServicoInternoForm, OcorrenciaForm
 from .serializers import ServicoInternoSerializer
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from .models import ServicoInterno
+from reportlab.pdfgen import canvas
+
 
 
 # API ViewSet para ServicoInterno
@@ -47,6 +52,10 @@ class ServicoInternoCreateView(CreateView):
     template_name = 'core/servico_form.html'
     success_url = reverse_lazy('servicointerno_list')
 
+class ServicoListView(ListView):
+    model = ServicoInterno
+    template_name = 'servico_list.html'
+    context_object_name = 'servicos'
 
 # Atualização de um Serviço Interno
 class ServicoInternoUpdateView(UpdateView):
@@ -114,3 +123,21 @@ def listar_servicos(request):
     """
     servicointernos = ServicoInterno.objects.all()
     return render(request, 'core/registrar_servico.html', {'servicointernos': servicointernos})
+
+
+def gerar_relatorio_pdf(request, id):
+    servicointerno = get_object_or_404(ServicoInterno, id=id)  # Carrega o objeto ou retorna 404
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="relatorio_servico_{id}.pdf"'
+
+    # Gerando o PDF
+    p = canvas.Canvas(response)
+    p.drawString(100, 800, "Relatório de Serviço Interno")
+    p.drawString(100, 750, f"Operador: {servicointerno.operador}")  # Atualize para o campo correto
+    p.drawString(100, 730, f"inicio do Serviço: {servicointerno.horario_inicio}")
+    p.drawString(100, 710, f"Fim do Serviço: {servicointerno.horario_fim}")
+    p.drawString(100, 690, f"Alteração: {servicointerno.alteracao}")
+
+    p.showPage()
+    p.save()
+    return response

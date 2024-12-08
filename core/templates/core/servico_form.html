@@ -1,7 +1,22 @@
-<h2>Editar Serviço Interno</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Salvar</button>
-    <a href="{% url 'servicointerno_list' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+{% extends 'base.html' %}
+
+{% block title %}
+    Livro do CPU - Deletar Livro
+{% endblock %}
+
+{% block content %}
+<div>
+
+    <h2>Editar Serviço Interno</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Salvar</button>
+        <a href="{% url 'servicointerno_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+
+    <a href="#" class="btn btn-secondary mt-3">Cancelar e Voltar para a Lista de Categorias</a>
+    
+</div>
+
+{% endblock %}

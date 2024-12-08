@@ -2,7 +2,7 @@
 from django.http import HttpResponse
 from .pdf_generator import gerar_pdf  # Importe a função de geração de PDF
 
-def gerar_relatorio_pdf(request):
+def gerar_relatorio_pdf(request, id):
     # Dados de exemplo, você pode obter esses dados do banco de dados ou de um formulário
     servico_data = {
         'operador': 'Operador A',

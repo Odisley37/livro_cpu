@@ -40,6 +40,10 @@ INSTALLED_APPS = [
     'turno',
     'unidade',
     'viatura',
+    'estado',
+    'equipamento',
+    'ocorrencia',
+    'colete',
     
 ]
 

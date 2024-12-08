@@ -32,6 +32,14 @@ INSTALLED_APPS = [
     # apps
     'core',
     'report',
+    'service',
+    'armamento',
+    'oficiais',
+    'pracas',
+    'tipo',
+    'turno',
+    'unidade',
+    'viatura',
     
 ]
 

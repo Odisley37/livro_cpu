@@ -6,4 +6,6 @@ urlpatterns = [
     path('relatorio/', include('report.urls')), 
     path('core/', include('core.urls')),  
     
+    path('service/', include('service.urls')), 
+    
 ]

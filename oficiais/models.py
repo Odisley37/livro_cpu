@@ -4,6 +4,7 @@ from unidade.models import Unidade
 class Oficial(models.Model):
     name = models.CharField(max_length=100)
     quadro = models.CharField(max_length=15)
+    posto = models.CharField(max_length=15)
     unidade = models.ForeignKey(Unidade, on_delete=models.PROTECT, related_name="oficiais")
     name_war = models.CharField(max_length=20)
     matricula = models.CharField(max_length=10)

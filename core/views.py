@@ -9,7 +9,17 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from .models import ServicoInterno
 from reportlab.pdfgen import canvas
-
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
+from datetime import date
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+import os
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Image
+from io import BytesIO
 
 
 # API ViewSet para ServicoInterno
@@ -126,18 +136,115 @@ def listar_servicos(request):
 
 
 def gerar_relatorio_pdf(request, id):
-    servicointerno = get_object_or_404(ServicoInterno, id=id)  # Carrega o objeto ou retorna 404
+    servicointerno = get_object_or_404(ServicoInterno, id=id)
+    
+    # Configura o HttpResponse para download do PDF
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="relatorio_servico_{id}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="livro_cpu_{id}.pdf"'
 
-    # Gerando o PDF
-    p = canvas.Canvas(response)
-    p.drawString(100, 800, "Relatório de Serviço Interno")
-    p.drawString(100, 750, f"Operador: {servicointerno.operador}")  # Atualize para o campo correto
-    p.drawString(100, 730, f"inicio do Serviço: {servicointerno.horario_inicio}")
-    p.drawString(100, 710, f"Fim do Serviço: {servicointerno.horario_fim}")
-    p.drawString(100, 690, f"Alteração: {servicointerno.alteracao}")
+    # Configuração do PDF
+    p = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+    margin = 50  # Margem
+    available_width = width - (2 * margin)  # Largura disponível para o conteúdo
+    y_position = height - margin  # Posição inicial
 
+    def verifica_pagina():
+        """Verifica se é necessário criar uma nova página."""
+        nonlocal y_position
+        if y_position < margin + 100:
+            p.showPage()  # Gera uma nova página
+            y_position = height - margin  # Reinicia a posição no topo da nova página
+
+    def desenha_cabecalho():
+        """Desenha o cabeçalho com as imagens e texto."""
+        nonlocal y_position
+        image_dir = os.path.join(os.path.dirname(__file__), 'static', 'images')  # Ajuste o caminho
+        img_left = os.path.join(image_dir, 'brasao1.png')
+        img_center = os.path.join(image_dir, 'brasao2.png')
+        img_right = os.path.join(image_dir, 'brasao3.png')
+
+        if os.path.exists(img_left):
+            p.drawImage(img_left, margin, y_position - 50, width=50, height=50, mask='auto')
+        if os.path.exists(img_center):
+            p.drawImage(img_center, (width / 2) - 25, y_position - 50, width=50, height=50, mask='auto')
+        if os.path.exists(img_right):
+            p.drawImage(img_right, width - margin - 50, y_position - 50, width=50, height=50, mask='auto')
+
+        y_position -= 70
+        p.setFont("Times-Roman", 12)
+        header_text = [
+            "ESTADO DO MARANHÃO",
+            "SECRETARIA DE SEGURANÇA PÚBLICA",
+            "POLÍCIA MILITAR",
+            "COMANDO DE POLICIAMENTO DO INTERIOR",
+            "COMANDO DE ÁREA 4",
+            "11º BATALHÃO DE POLÍCIA MILITAR"
+        ]
+        for line in header_text:
+            p.drawCentredString(width / 2, y_position, line)
+            y_position -= 15
+        p.line(margin, y_position, width - margin, y_position)
+        y_position -= 30
+
+    def desenha_secao(texto):
+        """Desenha a seção com o título destacado."""
+        nonlocal y_position
+        p.setFont("Times-Bold", 13)
+        p.setFillColor(colors.grey)
+        p.rect(margin, y_position - 25, available_width, 30, fill=True, stroke=False)
+        p.setFillColor(colors.white)
+        p.drawCentredString(width / 2, y_position, texto.upper())
+        y_position -= 50
+        verifica_pagina()
+
+    def desenha_tabela(headers, rows):
+        """Desenha uma tabela com dados ajustados à largura disponível."""
+        nonlocal y_position
+        col_widths = [available_width / len(headers)] * len(headers)
+        data = [headers] + rows
+        table = Table(data, colWidths=col_widths)
+        table.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
+            ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+        ]))
+        table_height = len(data) * 20
+        verifica_pagina()
+        table.wrapOn(p, margin, y_position)
+        table.drawOn(p, margin, y_position - table_height)
+        y_position -= table_height + 20
+
+    # Cabeçalho
+    desenha_cabecalho()
+
+    # Primeira Parte
+    desenha_secao("Primeira Parte - Serviço Diário")
+    p.setFont("Times-Bold", 12)
+    p.drawString(margin, y_position, "1.1. Serviço Interno")
+    y_position -= 20
+
+    p.setFont("Times-Roman", 10)
+    p.drawString(margin + 20, y_position, "a. Permanência")
+    y_position -= 20
+    permanencia_rows = [
+        ["11 BPM", "", ""],
+        ["47 BPM", "", ""],
+    ]
+    desenha_tabela(["Unidade", "Quarto de Hora", "PM"], permanencia_rows)
+
+    p.drawString(margin + 20, y_position, "b. Alterações do Serviço Interno")
+    y_position -= 20
+    alteracoes_rows = [["", "", "", "", "", ""] for _ in range(3)]
+    desenha_tabela(["Desp. SubCMT", "OPM", "PM", "Posto Escalado", "Turno/Hora", "Observações"], alteracoes_rows)
+
+    # Segunda Parte
+    desenha_secao("Segunda Parte - Ensino e Instrução")
+    # Adicionar conteúdo conforme necessário
+
+    # Finaliza o documento
     p.showPage()
     p.save()
     return response
